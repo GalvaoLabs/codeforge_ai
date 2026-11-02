@@ -1,153 +1,225 @@
-# Ajuda Imunes AI Coder - Criando Seu Assistente de Programação Python, em Python
 
-# Importa módulo para interagir com o sistema operacional
+# CodeForge AI Coder
+# Assistente de programação com inteligência artificial
+
+# Imports
 import os
-
-# Importa a biblioteca Streamlit para criar a interface web interativa
 import streamlit as st
-
-# Importa a classe Groq para se conectar à API da plataforma Groq e acessar o LLM
+from dotenv import load_dotenv
 from groq import Groq
 
-# Configura a página do Streamlit com título, ícone, layout e estado inicial da sidebar
+# Carrega as variáveis do arquivo .env, quando disponível
+load_dotenv()
+
+# Configuração da página (deve ser chamada uma única vez)
 st.set_page_config(
-    page_title="CodeForge = AI Coder",
+    page_title="CodeForge AI Coder",
     page_icon="logo.png",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Define um prompt de sistema que descreve as regras e comportamento do assistente de IA
+# Prompt de sistema
 CUSTOM_PROMPT = """
-Você é o "CodeForge AI Coder", um assistente de IA especialista em programação, com foco principal em Python. Sua missão é ajudar desenvolvedores iniciantes com dúvidas de programação de forma clara, precisa e útil.
+Você é o "CodeForge AI Coder", um assistente de IA especialista
+em programação, com foco principal em Python.
+
+Sua missão é ajudar desenvolvedores iniciantes com dúvidas
+de programação de forma clara, precisa e útil.
 
 REGRAS DE OPERAÇÃO:
-1.  **Foco em Programação**: Responda apenas a perguntas relacionadas a programação, algoritmos, estruturas de dados, bibliotecas e frameworks. Se o usuário perguntar sobre outro assunto, responda educadamente que seu foco é exclusivamente em auxiliar com código.
-2.  **Estrutura da Resposta**: Sempre formate suas respostas da seguinte maneira:
-    * **Explicação Clara**: Comece com uma explicação conceitual sobre o tópico perguntado. Seja direto e didático.
-    * **Exemplo de Código**: Forneça um ou mais blocos de código em Python com a sintaxe correta. O código deve ser bem comentado para explicar as partes importantes.
-    * **Detalhes do Código**: Após o bloco de código, descreva em detalhes o que cada parte do código faz, explicando a lógica e as funções utilizadas.
-    * **Documentação de Referência**: Ao final, inclua uma seção chamada "📚 Documentação de Referência" com um link direto e relevante para a documentação oficial da Linguagem Python (docs.python.org) ou da biblioteca em questão.
-3.  **Clareza e Precisão**: Use uma linguagem clara. Evite jargões desnecessários. Suas respostas devem ser tecnicamente precisas.
+
+1. FOCO EM PROGRAMAÇÃO:
+Responda apenas a perguntas relacionadas a programação,
+algoritmos, estruturas de dados, bibliotecas e frameworks.
+Se o usuário perguntar sobre outro assunto, informe educadamente
+que seu foco é auxiliar com programação.
+
+2. ESTRUTURA DA RESPOSTA:
+Sempre que possível, organize suas respostas da seguinte forma:
+
+- Explicação Clara: apresente o conceito de maneira didática.
+- Exemplo de Código: forneça exemplos em Python com sintaxe correta.
+- Detalhes do Código: explique a lógica e as funções utilizadas.
+- Documentação de Referência: indique documentação oficial
+  relevante da linguagem ou biblioteca utilizada.
+
+3. CLAREZA E PRECISÃO:
+Utilize linguagem clara e tecnicamente correta.
+Evite jargões desnecessários.
+Seja didático e considere que o usuário pode ser iniciante.
 """
 
-# Cria o conteúdo da barra lateral no Streamlit
-with st.sidebar:
-    
-    # Define o título e a logo da barra lateral
-    st.title("🤖 CodeForge - AI Coder")
-    st.image("painel.png")
+# Recupera uma chave configurada pelo desenvolvedor
+def get_default_api_key():
+    api_key = os.getenv("GROQ_API_KEY")
 
-    # Mostra um texto explicativo sobre o assistente
-    st.write("Um assistente de IA focado em programação em Python para ajudar iniciantes")
-    
-    # Campo para inserir a chave de API da Groq
-    groq_api_key = st.text_input(
-        "Insira sua Groq API Key",
-        type="password",
-        help="Obtenha sua chave em https://console.groq.com/keys"
-    )
+    if api_key:
+        return api_key
 
-    # Adiciona linhas divisórias e explicações extras na barra lateral
-    st.markdown("---")
-    st.markdown("Desenvolvido para auxiliar em suas dúvidas de programação com Linguagem Python. IA pode cometer erros. Sempre verifique as respostas.")
+    try:
+        return st.secrets.get("GROQ_API_KEY", None)
+    except Exception:
+        return None
 
-    st.markdown("---")
-    st.markdown("Conheça os Cursos Individuais, Formações e Programas de Pós-Graduação da DSA")
 
-# Título principal do app
-st.title("Te ajuda a melhorar 😊")
-
-# Subtítulo adicional
-st.subheader("Uma IA para te ajudar")
-
-# Texto auxiliar abaixo do título
-st.caption("Faça sua pergunta sobre a Lingugagem Python e obtenha código, explicações e referências")
-
-# Inicializa o histórico de mensagens na sessão, caso ainda não exista
+# Inicializa o histórico da conversa
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Exibe todas as mensagens anteriores armazenadas no estado da sessão
+
+# BARRA LATERAL
+with st.sidebar:
+
+    st.title("🤖 CodeForge AI Coder")
+
+    st.image("painel.png")
+
+    st.write(
+        "Um assistente de inteligência artificial "
+        "focado em programação, especialmente Python."
+    )
+
+    st.markdown("---")
+
+    # Campo para inserir a chave de API
+    st.subheader("Configuração da API")
+
+    user_api_key = st.text_input(
+        "Sua chave de API da Groq",
+        type="password",
+        placeholder="gsk_...",
+        help="Sua chave será utilizada durante esta sessão."
+    )
+
+    # Define qual chave será utilizada
+    if user_api_key.strip():
+        api_key = user_api_key.strip()
+        st.success("Utilizando sua chave de API.")
+    else:
+        api_key = get_default_api_key()
+
+        if api_key:
+            st.info("Utilizando a chave configurada pelo desenvolvedor.")
+        else:
+            st.warning("Insira uma chave de API para começar.")
+
+    st.markdown("---")
+
+    st.markdown(
+        """
+        **Sobre o projeto**
+
+        O CodeForge AI Coder foi desenvolvido para auxiliar
+        estudantes e iniciantes no aprendizado de programação.
+
+        A inteligência artificial pode cometer erros.
+        Sempre verifique as respostas e os códigos gerados.
+        """
+    )
+
+    st.markdown("---")
+
+    st.markdown(
+        "Conheça os cursos, formações e programas de "
+        "pós-graduação da DSA."
+    )
+
+
+# INTERFACE PRINCIPAL
+
+st.title("CodeForge AI Coder")
+
+st.subheader("Seu assistente de programação")
+
+st.caption(
+    "Faça perguntas sobre Python e obtenha explicações, "
+    "exemplos de código e referências."
+)
+
+
+# EXIBIÇÃO DO HISTÓRICO
+
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Inicializa a variável do cliente Groq como None
-client = None
 
-# Verifica se o usuário forneceu a chave de API da Groq
-if groq_api_key:
-    
-    try:
-        
-        # Cria cliente Groq com a chave de API fornecida
-        client = Groq(api_key = groq_api_key)
-    
-    except Exception as e:
-        
-        # Exibe erro caso haja problema ao inicializar cliente
-        st.sidebar.error(f"Erro ao inicializar o cliente Groq: {e}")
+# ENTRADA DO USUÁRIO
+
+if prompt := st.chat_input("Qual é a sua dúvida sobre Python?"):
+
+    # Verifica se existe uma chave de API
+    if not api_key:
+        st.warning(
+            "Para utilizar o CodeForge AI Coder, "
+            "insira uma chave de API da Groq na barra lateral."
+        )
         st.stop()
 
-# Caso não tenha chave, mas já existam mensagens, mostra aviso
-elif st.session_state.messages:
-    st.warning("Por favor, insira sua API Key da Groq na barra lateral para continuar.")
+    # Armazena e exibe a mensagem do usuário
+    st.session_state.messages.append(
+        {"role": "user", "content": prompt}
+    )
 
-# Captura a entrada do usuário no chat
-if prompt := st.chat_input("Qual a sua dúvida sobre Python ?"):
-    
-    # Se não houver cliente válido, mostra aviso e para a execução
-    if not client:
-        st.warning("Por favor, insira sua API Key da Groq na barra lateral para começar.")
-        st.stop()
-
-    # Armazena a mensagem do usuário no estado da sessão
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    
-    # Exibe a mensagem do usuário no chat
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Prepara mensagens para enviar à API, incluindo prompt de sistema
-    messages_for_api = [{"role": "system", "content": CUSTOM_PROMPT}]
-    for msg in st.session_state.messages:
-        
-        messages_for_api.append(msg)
+    # Prepara o histórico para enviar à API
+    messages_for_api = [
+        {"role": "system", "content": CUSTOM_PROMPT}
+    ]
 
-    # Cria a resposta do assistente no chat
+    messages_for_api.extend(st.session_state.messages)
+
+    # Gera a resposta da inteligência artificial
     with st.chat_message("assistant"):
-        
-        with st.spinner("Analisando sua pergunta..."):
-            
-            try:
-                
-                # Chama a API da Groq para gerar a resposta do assistente
-                chat_completion = client.chat.completions.create(
-                    messages = messages_for_api,
-                    model = "openai/gpt-oss-20b", 
-                    temperature = 0.7,
-                    max_tokens = 2048,
-                )
-                
-                # Extrai a resposta gerada pela API
-                dsa_ai_resposta = chat_completion.choices[0].message.content
-                
-                # Exibe a resposta no Streamlit
-                st.markdown(dsa_ai_resposta)
-                
-                # Armazena resposta do assistente no estado da sessão
-                st.session_state.messages.append({"role": "assistant", "content": dsa_ai_resposta})
 
-            # Caso ocorra erro na comunicação com a API, exibe mensagem de erro
-            except Exception as e:
-                st.error(f"Ocorreu um erro ao se comunicar com a API da Groq: {e}")
+        with st.spinner("Analisando sua pergunta..."):
+
+            try:
+                # Inicializa o cliente da Groq
+                client = Groq(api_key=api_key)
+
+                # Solicita uma resposta à API
+                chat_completion = client.chat.completions.create(
+                    messages=messages_for_api,
+                    model="openai/gpt-oss-20b",
+                    temperature=0.7,
+                    max_tokens=2048
+                )
+
+                # Extrai a resposta gerada
+                ai_response = (
+                    chat_completion.choices[0].message.content
+                )
+
+                # Exibe a resposta
+                st.markdown(ai_response)
+
+                # Armazena a resposta no histórico
+                st.session_state.messages.append(
+                    {
+                        "role": "assistant",
+                        "content": ai_response
+                    }
+                )
+
+            except Exception:
+                st.error(
+                    "Não foi possível gerar uma resposta. "
+                    "Verifique sua chave de API, sua conexão "
+                    "e tente novamente."
+                )
+
+
+# RODAPÉ
 
 st.markdown(
     """
     <div style="text-align: center; color: gray;">
         <hr>
-        <p>CodeForge AI Coder - Feito para ajudar os necessitados de conhecimento a pelo menos tentar obter um pouco mais de conhecimento</p>
+        <p>CodeForge AI Coder | Desenvolvido por GalvaoLabs</p>
     </div>
     """,
     unsafe_allow_html=True

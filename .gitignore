@@ -1,0 +1,13 @@
+# Variáveis de ambiente
+.env
+
+# Ambiente virtual
+venv/
+.venv/
+
+# Cache Python
+__pycache__/
+*.py[cod]
+
+# Configurações locais
+.streamlit/secrets.toml
