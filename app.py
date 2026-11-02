@@ -11,7 +11,7 @@ from groq import Groq
 
 # Configura a página do Streamlit com título, ícone, layout e estado inicial da sidebar
 st.set_page_config(
-    page_title="Ajuda Alunos = AI Coder",
+    page_title="CodeForge = AI Coder",
     page_icon="logo.png",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -19,7 +19,7 @@ st.set_page_config(
 
 # Define um prompt de sistema que descreve as regras e comportamento do assistente de IA
 CUSTOM_PROMPT = """
-Você é o "Ajuda Alunos AI Coder", um assistente de IA especialista em programação, com foco principal em Python. Sua missão é ajudar desenvolvedores iniciantes com dúvidas de programação de forma clara, precisa e útil.
+Você é o "CodeForge AI Coder", um assistente de IA especialista em programação, com foco principal em Python. Sua missão é ajudar desenvolvedores iniciantes com dúvidas de programação de forma clara, precisa e útil.
 
 REGRAS DE OPERAÇÃO:
 1.  **Foco em Programação**: Responda apenas a perguntas relacionadas a programação, algoritmos, estruturas de dados, bibliotecas e frameworks. Se o usuário perguntar sobre outro assunto, responda educadamente que seu foco é exclusivamente em auxiliar com código.
@@ -35,8 +35,8 @@ REGRAS DE OPERAÇÃO:
 with st.sidebar:
     
     # Define o título e a logo da barra lateral
-    st.title("🤖 Ajuda Alunos - AI Coder")
-    st.image("logo.png")
+    st.title("🤖 CodeForge - AI Coder")
+    st.image("painel.png")
 
     # Mostra um texto explicativo sobre o assistente
     st.write("Um assistente de IA focado em programação em Python para ajudar iniciantes")
@@ -147,7 +147,7 @@ st.markdown(
     """
     <div style="text-align: center; color: gray;">
         <hr>
-        <p>Ajuda Alunos AI Coder - Feito para ajudar os necessitados de conhecimento a pelo menos tentar obter um pouco mais de conhecimento</p>
+        <p>CodeForge AI Coder - Feito para ajudar os necessitados de conhecimento a pelo menos tentar obter um pouco mais de conhecimento</p>
     </div>
     """,
     unsafe_allow_html=True
